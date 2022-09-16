@@ -4,8 +4,9 @@ import { UsersService } from './users.service';
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
+
   @Get()
-  public async getAll(): Promise<any> {
+  public async getAll() {
     const users = await this.userService.get();
     return users;
   }

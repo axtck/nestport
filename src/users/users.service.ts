@@ -1,13 +1,12 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { Database } from 'src/database/database';
-import { DatabaseConstants } from 'src/database/database.constants';
+import { Injectable } from '@nestjs/common';
+import { UsersRepository } from './repositories/users.repository';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly database: Database) {}
+  constructor(private readonly repo: UsersRepository) {}
 
   public async get() {
-    const data = await this.database.query<{ name: string }>('select * from users');
+    const data = await this.repo.getById(1);
     console.log(data);
   }
 }

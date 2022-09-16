@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Pool, QueryResult, QueryResultRow } from 'pg';
+import { Null } from 'src/types/core.types';
 import { DatabaseConstants } from './database.constants';
 
 @Injectable()
@@ -11,25 +12,24 @@ export class Database {
     return result.rows;
   }
 
-  // public queryOne = async <T>(sql: string, parameters?: unknown[]): Promise<T> => {
-  //   const result: T[] = await this.query<T>(sql, parameters);
-  //   if (!result || !result.length) {
-  //     throw new Error('query did not return any rows');
-  //   }
-  //   if (result.length < 1) {
-  //     throw new Error('more than one row for query');
-  //   }
+  public async queryOne<T extends QueryResultRow>(sql: string, parameters?: unknown[]): Promise<T> {
+    const result: T[] = await this.query<T>(sql, parameters);
 
-  //   return result[0];
-  // };
+    if (!result || !result.length) throw new Error('query did not return any rows');
+    if (result.length < 1) throw new Error('more than one row for query');
 
-  // public queryOneOrDefault = async <T>(sql: string, parameters?: unknown[]): Promise<Nullable<T>> => {
-  //   const result: T[] = await this.query<T>(sql, parameters);
-  //   if (!result || !result.length) return null;
-  //   if (result.length < 1) {
-  //     throw new Error(`more than one row for query: ${createCleanSqlLogString(createSqlLog(sql, parameters))}`);
-  //   }
+    return result[0];
+  }
 
-  //   return result[0];
-  // };
+  public queryOneOrDefault = async <T extends QueryResultRow>(
+    sql: string,
+    parameters?: unknown[],
+  ): Promise<Null<T>> => {
+    const result: T[] = await this.query<T>(sql, parameters);
+
+    if (!result || !result.length) return null;
+    if (result.length < 1) throw new Error('more than one row for query');
+
+    return result[0];
+  };
 }

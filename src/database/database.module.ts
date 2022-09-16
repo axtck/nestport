@@ -4,7 +4,7 @@ import { Pool } from 'pg';
 import { DatabaseConstants } from './database.constants';
 import { Database } from './database';
 
-const dbProvider: Provider = {
+const connectionProvider: Provider = {
   provide: DatabaseConstants.TYPES.Connection,
   inject: [ConfigService],
   useFactory: (configService: ConfigService): Pool => {
@@ -19,8 +19,8 @@ const dbProvider: Provider = {
 };
 
 @Module({
-  providers: [dbProvider, Database],
-  exports: [dbProvider, Database],
+  providers: [connectionProvider, Database],
+  exports: [Database],
   imports: [ConfigModule],
 })
 export class DatabaseModule {}
