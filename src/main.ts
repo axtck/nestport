@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -10,6 +10,8 @@ const bootstrap = async () => {
   const port: number | undefined = configService.get<number>('app.port');
   if (!port) throw new Error('NODE_PORT not configured');
   await app.listen(port);
+
+  Logger.log(`Listening on port ${port}`, bootstrap.name);
 };
 
 bootstrap();
