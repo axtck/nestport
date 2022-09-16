@@ -1,6 +1,6 @@
 import { existsSync } from 'fs';
-import { Environment } from '../environment.types';
 import * as path from 'path';
+import { Environment } from '../environment.types';
 
 export const getEnvPath = (folderPath: string, environment: Environment): string => {
   const filePath: string = path.resolve(`${folderPath}/${environment}.env`);
@@ -10,8 +10,4 @@ export const getEnvPath = (folderPath: string, environment: Environment): string
   }
 
   return filePath;
-};
-
-export const logExportCommands = (environments: Environment[]) => {
-  return `run ${environments.map((e) => `'export NODE_ENV=${e}'`).join(' OR ')} on host machine`;
 };
