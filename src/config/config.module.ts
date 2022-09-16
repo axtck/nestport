@@ -7,21 +7,29 @@ import { isEnumValue } from 'src/types/guards/enums';
 import { appConfig } from './app.config';
 import * as Joi from 'joi';
 import * as path from 'path';
+import { databaseConfig } from './database.config';
 
-const environment: string | undefined = process.env.NODE_ENV;
+const environment: string | undefined = process.env.SERVER_ENV;
 if (!environment || !isEnumValue<Environment>(environment, EnvironmentConstants.environmentValues)) {
   throw new Error(
     `Environment '${environment}' not valid, run ${EnvironmentConstants.environmentValues
-      .map((e) => `'export NODE_ENV=${e}'`)
+      .map((e) => `'export SERVER_ENV=${e}'`)
       .join(' OR ')} on host machine`,
   );
 }
 
-const envFilePath: string = getEnvPath(path.join('src', 'common', 'environments'), Environment.Development);
+const envFilePath: string = getEnvPath(path.join('src', 'common', 'environments'), environment);
 const validationSchema = Joi.object({
   // app
-  NODE_ENV: Joi.valid(...EnvironmentConstants.environmentValues).required(),
-  NODE_PORT: Joi.number().required(),
+  SERVER_ENV: Joi.valid(...EnvironmentConstants.environmentValues).required(),
+  SERVER_PORT: Joi.number().required(),
+
+  // database
+  DB_HOST: Joi.string().required(),
+  DB_PORT: Joi.number().required(),
+  DB_DB: Joi.string().required(),
+  DB_USER: Joi.string().required(),
+  DB_PASSWORD: Joi.string().required(),
 });
 
 @Module({
@@ -29,7 +37,7 @@ const validationSchema = Joi.object({
     NestConfigModule.forRoot({
       envFilePath: envFilePath,
       isGlobal: true,
-      load: [appConfig],
+      load: [appConfig, databaseConfig],
       validationSchema: validationSchema,
     }),
   ],
