@@ -1,11 +1,11 @@
 import { Module, Provider } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Pool } from 'pg';
-
-export const PG_CONNECTION = Symbol.for('PG_CONNECTION');
+import { DatabaseConstants } from './database.constants';
+import { Database } from './database';
 
 const dbProvider: Provider = {
-  provide: PG_CONNECTION,
+  provide: DatabaseConstants.TYPES.Connection,
   inject: [ConfigService],
   useFactory: (configService: ConfigService): Pool => {
     return new Pool({
@@ -19,8 +19,8 @@ const dbProvider: Provider = {
 };
 
 @Module({
-  providers: [dbProvider],
-  exports: [dbProvider],
+  providers: [dbProvider, Database],
+  exports: [dbProvider, Database],
   imports: [ConfigModule],
 })
 export class DatabaseModule {}
