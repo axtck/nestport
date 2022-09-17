@@ -3,5 +3,5 @@ import { Database } from 'src/database/database';
 
 @Injectable()
 export class Repository {
-  constructor(public database: Database) {}
+  constructor(public readonly database: Database) {}
 }

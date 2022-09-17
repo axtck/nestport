@@ -5,12 +5,12 @@ import { Environment } from 'src/common/environment.types';
 import { getEnvPath } from 'src/common/helpers/environment.helper';
 import { isEnumValue } from 'src/types/guards/enums';
 import { appConfig } from './app.config';
+import { databaseConfig } from './database.config';
 import * as Joi from 'joi';
 import * as path from 'path';
-import { databaseConfig } from './database.config';
 
 const environment: string | undefined = process.env.SERVER_ENV;
-if (!environment || !isEnumValue<Environment>(environment, EnvironmentConstants.environmentValues)) {
+if (!isEnumValue<Environment>(environment, EnvironmentConstants.environmentValues)) {
   throw new Error(
     `Environment '${environment}' not valid, run ${EnvironmentConstants.environmentValues
       .map((e) => `'export SERVER_ENV=${e}'`)
