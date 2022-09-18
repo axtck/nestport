@@ -9,16 +9,20 @@ export class UsersService {
   constructor(private readonly usersRepository: UsersRepository) {}
 
   public async getAll(): Promise<IUser[]> {
-    const data: IUser[] = await this.usersRepository.getAll();
+    const data: IUser[] = await this.usersRepository.findAll();
     return data;
   }
 
-  public async getById(userId: Id): Promise<IUser> {
-    const data: IUser = await this.usersRepository.getById(userId);
+  public async findOne(userId: Id): Promise<IUser> {
+    const data: IUser = await this.usersRepository.findOne(userId);
     return data;
   }
 
   public async create(createUserDto: CreateUserDto): Promise<void> {
     await this.usersRepository.create(createUserDto);
+  }
+
+  public async remove(userId: Id): Promise<void> {
+    await this.usersRepository.remove(userId);
   }
 }

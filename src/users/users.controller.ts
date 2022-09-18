@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Id } from 'src/types/core.types';
 import { CreateUserDto } from './interfaces/dto/create-user.dto';
 import { IUser } from './interfaces/models/user';
@@ -9,14 +9,14 @@ export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
   @Get('/')
-  public async getAll(): Promise<IUser[]> {
+  public async findAll(): Promise<IUser[]> {
     const users: IUser[] = await this.userService.getAll();
     return users;
   }
 
   @Get('/:id')
-  public async getById(@Param('id', ParseIntPipe) id: Id): Promise<IUser> {
-    const user: IUser = await this.userService.getById(id);
+  public async findOne(@Param('id', ParseIntPipe) id: Id): Promise<IUser> {
+    const user: IUser = await this.userService.findOne(id);
     return user;
   }
 
@@ -24,5 +24,10 @@ export class UsersController {
   @UsePipes(ValidationPipe)
   public async create(@Body() createUserDto: CreateUserDto) {
     await this.userService.create(createUserDto);
+  }
+
+  @Delete('/:id')
+  public async remove(@Param('id', ParseIntPipe) id: number) {
+    await this.userService.remove(id);
   }
 }
