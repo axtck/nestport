@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Id } from 'src/types/core.types';
 import { CreateUserDto } from './interfaces/dtos/create-user.dto';
+import { IAuthUser } from './interfaces/models/auth-user';
 import { IUser } from './interfaces/models/user';
 import { UsersRepository } from './users.repository';
 
@@ -15,6 +16,11 @@ export class UsersService {
 
   public async findOne(userId: Id): Promise<IUser> {
     const data: IUser = await this.usersRepository.findOne(userId);
+    return data;
+  }
+
+  public async findOneByUsername(username: string): Promise<IAuthUser> {
+    const data: IAuthUser = await this.usersRepository.findOneByUsername(username);
     return data;
   }
 

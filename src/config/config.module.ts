@@ -8,6 +8,7 @@ import { appConfig } from './app.config';
 import { databaseConfig } from './database.config';
 import * as Joi from 'joi';
 import * as path from 'path';
+import { authConfig } from './auth.config';
 
 const environment: string | undefined = process.env.SERVER_ENV;
 if (!isEnumValue<Environment>(environment, EnvironmentConstants.environmentValues)) {
@@ -31,6 +32,9 @@ const validationSchema = Joi.object({
   DB_SCHEMA: Joi.string().required(),
   DB_USER: Joi.string().required(),
   DB_PASSWORD: Joi.string().required(),
+
+  // auth
+  JWT_SECRET: Joi.string().required(),
 });
 
 @Module({
@@ -38,7 +42,7 @@ const validationSchema = Joi.object({
     NestConfigModule.forRoot({
       envFilePath: envFilePath,
       isGlobal: true,
-      load: [appConfig, databaseConfig],
+      load: [appConfig, databaseConfig, authConfig],
       validationSchema: validationSchema,
     }),
   ],
