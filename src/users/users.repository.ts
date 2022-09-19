@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'src/core/repository';
 import { Id, QueryString } from 'src/types/core.types';
-import { ICreateUserDao, IUserDao } from '../interfaces/dao/user.dao';
-import { CreateUserDto } from '../interfaces/dto/create-user.dto';
-import { IUser } from '../interfaces/models/user';
-import { CreateUserDtoMapper } from '../mappers/create-user-dto.mapper';
-import { UserDaoMapper } from '../mappers/user-dao.mapper';
+import { ICreateUserDao, IUserDao } from './interfaces/daos/user.dao';
+import { CreateUserDto } from './interfaces/dtos/create-user.dto';
+import { IUser } from './interfaces/models/user';
+import { CreateUserDtoMapper } from './interfaces/mappers/create-user-dto.mapper';
+import { UserDaoMapper } from './interfaces/mappers/user-dao.mapper';
 
 @Injectable()
 export class UsersRepository extends Repository {

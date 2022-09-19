@@ -1,5 +1,5 @@
-import { ICreateUserDao } from '../interfaces/dao/user.dao';
-import { CreateUserDto } from '../interfaces/dto/create-user.dto';
+import { ICreateUserDao } from '../daos/user.dao';
+import { CreateUserDto } from '../dtos/create-user.dto';
 
 export class CreateUserDtoMapper {
   public static toCreateUserDao(dto: CreateUserDto): ICreateUserDao {

@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Id } from 'src/types/core.types';
-import { CreateUserDto } from './interfaces/dto/create-user.dto';
+import { CreateUserDto } from './interfaces/dtos/create-user.dto';
 import { IUser } from './interfaces/models/user';
 import { UsersService } from './users.service';
 
