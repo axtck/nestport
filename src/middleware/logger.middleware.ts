@@ -3,8 +3,8 @@ import { Request, Response, NextFunction } from 'express';
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
-  private logger: Logger = new Logger('HTTP');
-  use(req: Request, res: Response, next: NextFunction) {
+  private readonly logger: Logger = new Logger('HTTP');
+  public use(req: Request, res: Response, next: NextFunction): void {
     const fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
     this.logger.log(`HTTP ${req.method} ${fullUrl} ${res.statusCode}`);
     next();

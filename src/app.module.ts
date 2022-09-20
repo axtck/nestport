@@ -8,7 +8,7 @@ import { AuthModule } from './auth/auth.module';
   imports: [ConfigModule, UsersModule, AuthModule],
 })
 export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
+  configure(consumer: MiddlewareConsumer): void {
     consumer.apply(LoggerMiddleware).forRoutes('*');
   }
 }

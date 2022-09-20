@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { Id } from 'src/types/core.types';
+import { Id, Null } from 'src/types/core.types';
 import { CreateUserDto } from './interfaces/dtos/create-user.dto';
-import { IAuthUser } from './interfaces/models/auth-user';
+import { ILoginUser } from './interfaces/models/auth-user';
 import { IUser } from './interfaces/models/user';
 import { UsersRepository } from './users.repository';
 
@@ -9,7 +9,7 @@ import { UsersRepository } from './users.repository';
 export class UsersService {
   constructor(private readonly usersRepository: UsersRepository) {}
 
-  public async getAll(): Promise<IUser[]> {
+  public async findAll(): Promise<IUser[]> {
     const data: IUser[] = await this.usersRepository.findAll();
     return data;
   }
@@ -19,8 +19,8 @@ export class UsersService {
     return data;
   }
 
-  public async findOneByUsername(username: string): Promise<IAuthUser> {
-    const data: IAuthUser = await this.usersRepository.findOneByUsername(username);
+  public async findOneByUsername(username: string): Promise<Null<ILoginUser>> {
+    const data: Null<ILoginUser> = await this.usersRepository.findOneByUsername(username);
     return data;
   }
 

@@ -1,12 +1,15 @@
+import { Id } from 'src/types/core.types';
+
 export interface IUserDao {
+  id: Id;
   username: string;
   email: string;
 }
 
-export interface IAuthUserDao extends IUserDao {
+export interface ILoginUserDao extends IUserDao {
   password: string;
 }
 
-export interface ICreateUserDao extends IUserDao {
+export interface ICreateUserDao extends Omit<IUserDao, 'id'> {
   password: string;
 }

@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'src/core/repository';
-import { Id, QueryString } from 'src/types/core.types';
-import { IAuthUserDao, ICreateUserDao, IUserDao } from './interfaces/daos/user.dao';
+import { Id, Null, QueryString } from 'src/types/core.types';
+import { ILoginUserDao, ICreateUserDao, IUserDao } from './interfaces/daos/user.dao';
 import { CreateUserDto } from './interfaces/dtos/create-user.dto';
 import { IUser } from './interfaces/models/user';
 import { CreateUserDtoMapper } from './interfaces/mappers/create-user-dto.mapper';
 import { UserDaoMapper } from './interfaces/mappers/user-dao.mapper';
-import { IAuthUser } from './interfaces/models/auth-user';
+import { ILoginUser } from './interfaces/models/auth-user';
 import { AuthUserDaoMapper } from './interfaces/mappers/auth-user-dao.mapper';
 
 @Injectable()
@@ -18,15 +18,15 @@ export class UsersRepository extends Repository {
   }
 
   public async findOne(userId: Id): Promise<IUser> {
-    const findQuery: QueryString = 'SELECT "username", "email" FROM "users" WHERE "id" = $1';
+    const findQuery: QueryString = 'SELECT "id", "username", "email" FROM "users" WHERE "id" = $1';
     const userDao: IUserDao = await this.database.queryOne<IUserDao>(findQuery, [userId]);
     return UserDaoMapper.toModel(userDao);
   }
 
-  public async findOneByUsername(username: string): Promise<IAuthUser> {
-    const findQuery: QueryString = 'SELECT "username", "email", "password" FROM "users" WHERE "username" = $1';
-    const userDao: IAuthUserDao = await this.database.queryOne<IAuthUserDao>(findQuery, [username]);
-    return AuthUserDaoMapper.toModel(userDao);
+  public async findOneByUsername(username: string): Promise<Null<ILoginUser>> {
+    const findQuery: QueryString = 'SELECT "id", "username", "email", "password" FROM "users" WHERE "username" = $1';
+    const userDao: Null<ILoginUserDao> = await this.database.queryOneOrDefault<ILoginUserDao>(findQuery, [username]);
+    return userDao ? AuthUserDaoMapper.toModel(userDao) : null;
   }
 
   public async create(createUser: CreateUserDto): Promise<void> {

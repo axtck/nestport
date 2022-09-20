@@ -1,5 +1,5 @@
 import { IUser } from './user';
 
-export interface IAuthUser extends IUser {
+export interface ILoginUser extends IUser {
   password: string;
 }

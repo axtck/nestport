@@ -1,9 +1,10 @@
-import { IAuthUserDao } from '../daos/user.dao';
-import { IAuthUser } from '../models/auth-user';
+import { ILoginUserDao } from '../daos/user.dao';
+import { ILoginUser } from '../models/auth-user';
 
 export class AuthUserDaoMapper {
-  public static toModel(dao: IAuthUserDao): IAuthUser {
+  public static toModel(dao: ILoginUserDao): ILoginUser {
     return {
+      id: dao.id,
       username: dao.username,
       email: dao.email,
       password: dao.password,

@@ -6,12 +6,12 @@ import * as path from 'path';
 import { AppModule } from './app.module';
 import { DatabaseAdmin } from './database/database.admin';
 
-const bootstrap = async () => {
+const bootstrap = async (): Promise<void> => {
   const app: INestApplication = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService: ConfigService = app.get(ConfigService);
   const databaseAdmin: DatabaseAdmin = app.get(DatabaseAdmin);
 
-  // at rt, this will point to dist/migrations
+  // at runtime, this will point to dist/migrations
   const migrationsFolderPath: string = path.join(__dirname, 'database', 'migrations');
   await databaseAdmin.runMigrations(migrationsFolderPath);
 
@@ -23,4 +23,4 @@ const bootstrap = async () => {
   Logger.log(`Listening on port ${port}, evironment: ${environment}`, bootstrap.name);
 };
 
-bootstrap();
+void bootstrap();
