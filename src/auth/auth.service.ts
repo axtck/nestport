@@ -6,6 +6,7 @@ import { ILoginUser } from 'src/users/interfaces/models/auth-user';
 import { UsersService } from '../users/users.service';
 import { IJwtTokenSignature } from './interfaces/jwt-token-signature.interface';
 import { IUserIdentifier } from './interfaces/user-identifier.interface';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -17,13 +18,15 @@ export class AuthService {
 
   public async validateUser(username: string, password: string): Promise<Null<IUserIdentifier>> {
     const user: Null<ILoginUser> = await this.usersService.findOneByUsername(username);
-    if (user && user.password === password) {
-      return {
-        id: user.id,
-        username: user.username,
-      };
-    }
-    return null;
+    if (!user) return null; // TODO: throw not found
+
+    const isMatch: boolean = await bcrypt.compare(password, user.password);
+    if (!isMatch) return null;
+
+    return {
+      id: user.id,
+      username: user.username,
+    };
   }
 
   public async getAccessToken(user: IUserIdentifier): Promise<string> {

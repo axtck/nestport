@@ -28,7 +28,7 @@ export class UsersController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('/one')
+  @Get('/info')
   public async findOne(@User('id') id: Id): Promise<IUser> {
     const user: IUser = await this.userService.findOne(id);
     return user;

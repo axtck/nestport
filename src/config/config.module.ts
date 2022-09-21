@@ -36,6 +36,7 @@ const validationSchema = Joi.object({
   // auth
   JWT_SECRET: Joi.string().required(),
   JWT_EXPIRY: Joi.number().required(),
+  SALT_ROUNDS: Joi.number().required(),
 });
 
 @Module({

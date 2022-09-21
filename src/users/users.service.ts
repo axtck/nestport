@@ -4,10 +4,12 @@ import { CreateUserDto } from './interfaces/dtos/create-user.dto';
 import { ILoginUser } from './interfaces/models/auth-user';
 import { IUser } from './interfaces/models/user';
 import { UsersRepository } from './users.repository';
+import * as bcrypt from 'bcrypt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(private readonly usersRepository: UsersRepository, private readonly configService: ConfigService) {}
 
   public async findAll(): Promise<IUser[]> {
     const data: IUser[] = await this.usersRepository.findAll();
@@ -25,7 +27,15 @@ export class UsersService {
   }
 
   public async create(createUserDto: CreateUserDto): Promise<void> {
-    await this.usersRepository.create(createUserDto);
+    const saltRounds: number = this.configService.get<number>('auth.saltRounds') as number;
+    const hashedPassword: string = await bcrypt.hash(createUserDto.password, saltRounds);
+
+    const userWithHashedPassword: CreateUserDto = {
+      ...createUserDto,
+      password: hashedPassword,
+    };
+
+    await this.usersRepository.create(userWithHashedPassword);
   }
 
   public async remove(userId: Id): Promise<void> {
