@@ -12,20 +12,20 @@ import { AuthUserDaoMapper } from './interfaces/mappers/auth-user-dao.mapper';
 @Injectable()
 export class UsersRepository extends Repository {
   public async findAll(): Promise<IUser[]> {
-    const findQuery: QueryString = 'SELECT username, email FROM users';
+    const findQuery: QueryString = 'SELECT u.username, u.email FROM users u';
     const userDaos: IUserDao[] = await this.database.query<IUserDao>(findQuery);
     return userDaos.map(UserDaoMapper.toModel);
   }
 
   public async findOne(userId: Id): Promise<IUser> {
-    const findQuery: QueryString = 'SELECT "id", "username", "email" FROM "users" WHERE "id" = $1';
+    const findQuery: QueryString = 'SELECT u.id, u.username, u.email FROM users u WHERE u.id = $1';
     const userDao: IUserDao = await this.database.queryOne<IUserDao>(findQuery, [userId]);
     return UserDaoMapper.toModel(userDao);
   }
 
-  public async findOneByUsername(username: string): Promise<Null<ILoginUser>> {
-    const findQuery: QueryString = 'SELECT "id", "username", "email", "password" FROM "users" WHERE "username" = $1';
-    const userDao: Null<ILoginUserDao> = await this.database.queryOneOrDefault<ILoginUserDao>(findQuery, [username]);
+  public async findOneByKey(type: 'username' | 'email', key: string): Promise<Null<ILoginUser>> {
+    const findQuery: QueryString = `SELECT u.id, u.username, u.email, u.password FROM users u WHERE u.${type} = $1`;
+    const userDao: Null<ILoginUserDao> = await this.database.queryOneOrDefault<ILoginUserDao>(findQuery, [key]);
     return userDao ? AuthUserDaoMapper.toModel(userDao) : null;
   }
 
