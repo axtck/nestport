@@ -3,15 +3,33 @@ import { ConfigService } from '@nestjs/config';
 import { readdir } from 'fs/promises';
 import * as path from 'path';
 import { Id, QueryString } from 'src/types/core.types';
-import { Database } from './database';
+import { Database } from '../database';
 
 @Injectable()
 export class DatabaseAdmin {
+  private readonly dbSchema: string = this.configService.get<string>('database.schema') as string;
+
   constructor(
     private readonly configService: ConfigService,
     private readonly database: Database,
     private readonly logger: Logger,
   ) {}
+
+  public async setSchema(): Promise<void> {
+    const existingSchema = await this.database.queryOneOrDefault(
+      `SELECT schema_name FROM information_schema.schemata WHERE schema_name = '${this.dbSchema}'`,
+    );
+
+    if (existingSchema) return;
+
+    await this.database.query(
+      `CREATE SCHEMA ${this.dbSchema} AUTHORIZATION ${this.configService.get<string>('database.user')}`,
+    );
+    await this.database.query(
+      `ALTER DATABASE ${this.configService.get<string>('database.database')} SET search_path TO ${this.dbSchema}`,
+    );
+  }
+
   public async runMigrations(migrationsFolderPath: string): Promise<void> {
     try {
       // create migrations table
@@ -55,25 +73,23 @@ export class DatabaseAdmin {
             `upgrading: migration ${migrationFileInfo.id} (${migrationFileInfo.name})`,
             DatabaseAdmin.name,
           );
-          await migration.upgrade(this.database);
+          await migration.upgrade(this.database, this.configService);
           this.logger.log(`migration ${migrationFileInfo.id} successfully upgraded`, DatabaseAdmin.name);
           await this.insertOrUpdateMigration(migrationFileInfo, true);
         } catch (e) {
-          this.logger.error(`migration ${migrationFileInfo.id} upgrading failed`, DatabaseAdmin.name);
+          this.logger.error(`migration ${migrationFileInfo.id} upgrading failed: ${e}`, DatabaseAdmin.name);
           await this.insertOrUpdateMigration(migrationFileInfo, false);
         }
       }
     } catch (e) {
-      this.logger.error('upgrading database failed', DatabaseAdmin.name);
+      this.logger.error(`upgrading database failed: ${e}`, DatabaseAdmin.name);
     }
   }
 
   private async createMigrationsTable(): Promise<void> {
-    const schemaName: string = this.configService.get<string>('database.schema') as string;
-
     const getMigrationsTableQuery: QueryString = `
       SELECT table_name FROM information_schema.tables 
-      WHERE table_schema = '${schemaName}' AND table_name = 'migrations'
+      WHERE table_schema = '${this.dbSchema}' AND table_name = 'migrations'
     `;
 
     const existingTable: unknown = await this.database.queryOneOrDefault(getMigrationsTableQuery);
@@ -83,7 +99,7 @@ export class DatabaseAdmin {
     }
 
     const createMigrationsTableQuery: QueryString = `
-      CREATE TABLE migrations (
+      CREATE TABLE ${this.dbSchema}.migrations (
         "id" int8 NOT NULL,
         "name" varchar(100) NOT NULL,
         "succeeded" bool NOT NULL,
@@ -99,7 +115,7 @@ export class DatabaseAdmin {
 
   private async insertOrUpdateMigration(migrationFileInfo: IMigrationFileInfo, succeeded: boolean): Promise<void> {
     const insertMigrationQuery: QueryString = `
-      INSERT INTO migrations
+      INSERT INTO ${this.dbSchema}.migrations
       ("id", "name", "succeeded", "created", "executed") 
       VALUES ($1, $2, $3, $4, $5)
       ON CONFLICT ("id") DO UPDATE 
@@ -118,13 +134,13 @@ export class DatabaseAdmin {
   }
 
   private async getStoredMigrations(): Promise<Array<{ id: string }>> {
-    const getStoredMigrationsQuery: QueryString = 'SELECT id FROM migrations';
+    const getStoredMigrationsQuery: QueryString = `SELECT id FROM ${this.dbSchema}.migrations`;
     const storedMigrations: Array<{ id: string }> = await this.database.query(getStoredMigrationsQuery);
     return storedMigrations;
   }
 
   private async getFailedMigrations(): Promise<Array<{ id: string }>> {
-    const getMigrationsQuery: QueryString = 'SELECT id FROM migrations WHERE succeeded = FALSE';
+    const getMigrationsQuery: QueryString = `SELECT id FROM ${this.dbSchema}.migrations WHERE succeeded = FALSE`;
     const failedMigrations: Array<{ id: string }> = await this.database.query(getMigrationsQuery);
     return failedMigrations;
   }
@@ -163,7 +179,7 @@ export class DatabaseAdmin {
 }
 
 interface IMigrationFile {
-  upgrade: (database: Database) => Promise<void>;
+  upgrade: (database: Database, configService?: ConfigService) => Promise<void>;
 }
 
 interface IMigrationFileInfo {

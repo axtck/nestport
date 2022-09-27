@@ -4,12 +4,14 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as path from 'path';
 import { AppModule } from './app.module';
-import { DatabaseAdmin } from './database/database.admin';
+import { DatabaseAdmin } from './database/admin/database-admin';
 
 const bootstrap = async (): Promise<void> => {
   const app: INestApplication = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService: ConfigService = app.get(ConfigService);
   const databaseAdmin: DatabaseAdmin = app.get(DatabaseAdmin);
+
+  await databaseAdmin.setSchema();
 
   // at runtime, this will point to dist/migrations
   const migrationsFolderPath: string = path.join(__dirname, 'database', 'migrations');

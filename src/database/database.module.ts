@@ -1,7 +1,7 @@
 import { Logger, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { Database } from './database';
-import { DatabaseAdmin } from './database.admin';
+import { DatabaseAdmin } from './admin/database-admin';
 
 @Module({
   providers: [Database, DatabaseAdmin, Logger],

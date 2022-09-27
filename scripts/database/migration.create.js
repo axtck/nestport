@@ -3,11 +3,13 @@ const path = require('path');
 const mkdirp = require('mkdirp');
 const minimist = require('minimist');
 
-const migrationFileContent = `import { Database } from "../core/Database";
+const migrationFileContent = `import { ConfigService } from '@nestjs/config';
+import { Database } from '../database';
 
-export const upgrade = async (database: Database): Promise<void> => {
-    await database.query("SHOW TABLES");
-};`;
+export const upgrade = async (database: Database, configService: ConfigService): Promise<void> => {
+  await database.query('SELECT 1');
+};
+`;
 
 const create = async () => {
   try {
