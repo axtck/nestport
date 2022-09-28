@@ -1,20 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
+import { ConfigHelper, IAuthConfig } from 'src/config/config.helper';
 import { Null } from 'src/types/core.types';
 import { ILoginUser } from 'src/users/interfaces/models/auth-user';
 import { UsersService } from '../users/users.service';
 import { IJwtTokenSignature } from './interfaces/jwt-token-signature.interface';
 import { IUserIdentifier } from './interfaces/user-identifier.interface';
-import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtTokenService: JwtService,
-    private readonly configService: ConfigService,
+    private readonly configHelper: ConfigHelper,
   ) {}
+
+  private readonly authConfig: IAuthConfig = this.configHelper.getAuthConfig();
 
   public async validateUser(username: string, password: string): Promise<Null<IUserIdentifier>> {
     const user: Null<ILoginUser> = await this.usersService.findOneByUsername(username);
@@ -36,7 +38,7 @@ export class AuthService {
     };
 
     const options: JwtSignOptions = {
-      expiresIn: this.configService.get<number>('auth.jwtExpiry'),
+      expiresIn: this.authConfig.jwtExpiry,
     };
 
     return this.jwtTokenService.sign(token, options);

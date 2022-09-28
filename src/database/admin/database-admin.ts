@@ -2,32 +2,34 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { readdir } from 'fs/promises';
 import * as path from 'path';
+import { ConfigHelper, IDatabaseConfig } from 'src/config/config.helper';
 import { Id, QueryString } from 'src/types/core.types';
 import { Database } from '../database';
 
 @Injectable()
 export class DatabaseAdmin {
-  private readonly dbSchema: string = this.configService.get<string>('database.schema') as string;
-
   constructor(
-    private readonly configService: ConfigService,
     private readonly database: Database,
     private readonly logger: Logger,
+    private readonly configHelper: ConfigHelper,
+    private readonly configService: ConfigService,
   ) {}
 
+  private readonly dbConfig: IDatabaseConfig = this.configHelper.getDatabaseConfig();
+
   public async setSchema(): Promise<void> {
-    const existingSchema = await this.database.queryOneOrDefault(
-      `SELECT schema_name FROM information_schema.schemata WHERE schema_name = '${this.dbSchema}'`,
-    );
+    const getSchemaQuery: QueryString = `
+      SELECT schema_name 
+      FROM information_schema.schemata 
+      WHERE schema_name = '${this.dbConfig.schema}'
+    `;
+
+    const existingSchema = await this.database.queryOneOrDefault(getSchemaQuery);
 
     if (existingSchema) return;
 
-    await this.database.query(
-      `CREATE SCHEMA ${this.dbSchema} AUTHORIZATION ${this.configService.get<string>('database.user')}`,
-    );
-    await this.database.query(
-      `ALTER DATABASE ${this.configService.get<string>('database.database')} SET search_path TO ${this.dbSchema}`,
-    );
+    await this.database.query(`CREATE SCHEMA ${this.dbConfig.schema} AUTHORIZATION ${this.dbConfig.user}`);
+    await this.database.query(`ALTER DATABASE ${this.dbConfig.database} SET search_path TO ${this.dbConfig.schema}`);
   }
 
   public async runMigrations(migrationsFolderPath: string): Promise<void> {
@@ -89,7 +91,7 @@ export class DatabaseAdmin {
   private async createMigrationsTable(): Promise<void> {
     const getMigrationsTableQuery: QueryString = `
       SELECT table_name FROM information_schema.tables 
-      WHERE table_schema = '${this.dbSchema}' AND table_name = 'migrations'
+      WHERE table_schema = '${this.dbConfig.schema}' AND table_name = 'migrations'
     `;
 
     const existingTable: unknown = await this.database.queryOneOrDefault(getMigrationsTableQuery);
@@ -99,7 +101,7 @@ export class DatabaseAdmin {
     }
 
     const createMigrationsTableQuery: QueryString = `
-      CREATE TABLE ${this.dbSchema}.migrations (
+      CREATE TABLE ${this.dbConfig.schema}.migrations (
         "id" int8 NOT NULL,
         "name" varchar(100) NOT NULL,
         "succeeded" bool NOT NULL,
@@ -115,7 +117,7 @@ export class DatabaseAdmin {
 
   private async insertOrUpdateMigration(migrationFileInfo: IMigrationFileInfo, succeeded: boolean): Promise<void> {
     const insertMigrationQuery: QueryString = `
-      INSERT INTO ${this.dbSchema}.migrations
+      INSERT INTO ${this.dbConfig.schema}.migrations
       ("id", "name", "succeeded", "created", "executed") 
       VALUES ($1, $2, $3, $4, $5)
       ON CONFLICT ("id") DO UPDATE 
@@ -134,13 +136,13 @@ export class DatabaseAdmin {
   }
 
   private async getStoredMigrations(): Promise<Array<{ id: string }>> {
-    const getStoredMigrationsQuery: QueryString = `SELECT id FROM ${this.dbSchema}.migrations`;
+    const getStoredMigrationsQuery: QueryString = `SELECT id FROM ${this.dbConfig.schema}.migrations`;
     const storedMigrations: Array<{ id: string }> = await this.database.query(getStoredMigrationsQuery);
     return storedMigrations;
   }
 
   private async getFailedMigrations(): Promise<Array<{ id: string }>> {
-    const getMigrationsQuery: QueryString = `SELECT id FROM ${this.dbSchema}.migrations WHERE succeeded = FALSE`;
+    const getMigrationsQuery: QueryString = `SELECT id FROM ${this.dbConfig.schema}.migrations WHERE succeeded = FALSE`;
     const failedMigrations: Array<{ id: string }> = await this.database.query(getMigrationsQuery);
     return failedMigrations;
   }

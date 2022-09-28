@@ -1,20 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Pool, QueryResult, QueryResultRow } from 'pg';
+import { ConfigHelper } from 'src/config/config.helper';
 import { Null, QueryString } from 'src/types/core.types';
 
 @Injectable()
 export class Database {
   private readonly connection: Pool;
 
-  constructor(private readonly configService: ConfigService) {
-    this.connection = new Pool({
-      host: this.configService.get<string>('database.host'),
-      port: this.configService.get<number>('database.port'),
-      user: this.configService.get<string>('database.user'),
-      database: this.configService.get<string>('database.database'),
-      password: this.configService.get<string>('database.password'),
-    });
+  constructor(configHelper: ConfigHelper) {
+    this.connection = new Pool({ ...configHelper.getDatabaseConfig() });
   }
 
   public async query<T extends QueryResultRow>(sql: QueryString, parameters?: unknown[]): Promise<T[]> {

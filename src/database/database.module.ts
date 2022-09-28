@@ -1,11 +1,10 @@
 import { Logger, Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { Database } from './database';
 import { DatabaseAdmin } from './admin/database-admin';
+import { ConfigHelper } from 'src/config/config.helper';
 
 @Module({
-  providers: [Database, DatabaseAdmin, Logger],
+  providers: [Database, DatabaseAdmin, Logger, ConfigHelper],
   exports: [Database, DatabaseAdmin],
-  imports: [ConfigModule],
 })
 export class DatabaseModule {}

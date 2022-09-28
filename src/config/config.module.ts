@@ -9,6 +9,7 @@ import { databaseConfig } from './database.config';
 import * as Joi from 'joi';
 import * as path from 'path';
 import { authConfig } from './auth.config';
+import { ConfigHelper } from './config.helper';
 
 const environment: string | undefined = process.env.SERVER_ENV;
 if (!isEnumValue<Environment>(environment, EnvironmentConstants.environmentValues)) {
@@ -48,5 +49,7 @@ const validationSchema = Joi.object({
       validationSchema: validationSchema,
     }),
   ],
+  providers: [ConfigHelper],
+  exports: [ConfigHelper],
 })
 export class ConfigModule {}

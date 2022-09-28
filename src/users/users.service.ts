@@ -1,15 +1,17 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Id, Null } from 'src/types/core.types';
 import { CreateUserDto } from './interfaces/dtos/create-user.dto';
 import { ILoginUser } from './interfaces/models/auth-user';
 import { IUser } from './interfaces/models/user';
 import { UsersRepository } from './users.repository';
 import * as bcrypt from 'bcrypt';
+import { ConfigHelper, IAuthConfig } from 'src/config/config.helper';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersRepository: UsersRepository, private readonly configService: ConfigService) {}
+  constructor(private readonly usersRepository: UsersRepository, private readonly configHelper: ConfigHelper) {}
+
+  private readonly authConfig: IAuthConfig = this.configHelper.getAuthConfig();
 
   public async findAll(): Promise<IUser[]> {
     const data: IUser[] = await this.usersRepository.findAll();
@@ -27,10 +29,9 @@ export class UsersService {
   }
 
   public async create(createUserDto: CreateUserDto): Promise<void> {
-    await this.checkUnique(createUserDto.email, createUserDto.username);
+    await this.ensureUnique(createUserDto.email, createUserDto.username);
 
-    const saltRounds: number = this.configService.get<number>('auth.saltRounds') as number;
-    const hashedPassword: string = await bcrypt.hash(createUserDto.password, saltRounds);
+    const hashedPassword: string = await bcrypt.hash(createUserDto.password, this.authConfig.saltRounds);
 
     const userWithHashedPassword: CreateUserDto = {
       ...createUserDto,
@@ -44,7 +45,7 @@ export class UsersService {
     await this.usersRepository.remove(userId);
   }
 
-  private async checkUnique(email: string, username: string): Promise<void> {
+  private async ensureUnique(email: string, username: string): Promise<void> {
     if (await this.usersRepository.findOneByKey('email', email)) {
       throw new HttpException('email already in use', HttpStatus.CONFLICT);
     }
