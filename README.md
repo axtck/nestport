@@ -20,7 +20,26 @@ cd nestport
 npm i
 ```
 
+Manually set the environment you want to run the server in
+
+```bash
+# dev
+export SERVER_ENV=development
+
+# or prod
+export SERVER_ENV=production
+```
+
 Copy the `.env.sample` files in `.src/common/environments/` and remove `.sample` from filename, edit environment variables (use db name used for creating db)
+
+```bash
+# for example
+DB_DB=nestport
+DB_PORT=5432
+# and so on
+```
+
+If an environment variable isn't correctly set, a schema validator will throw an error telling you what needs to be changed
 
 Start the server
 
